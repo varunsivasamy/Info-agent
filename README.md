@@ -1,119 +1,62 @@
-# Intelligent News Agent — Terminal
+---
+title: News Agent
+emoji: 📰
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
 
-A command-line news retrieval and verification agent powered by **Google Gemini 2.0 Flash** with live Google Search grounding.
+# 📰 News Agent — WhatsApp Bot
 
-## Features
+An AI-powered news retrieval agent deployed as a WhatsApp bot.
 
-- Live news via Gemini's Google Search grounding tool
-- Verification & retry logic (up to 3 retries)
-- Deduplication of same-event stories
-- Rich terminal output with colour formatting
-- Interactive REPL mode or single-query CLI mode
-- Optional raw `--json` output for scripting
+Built with **LangChain + Groq (LLaMA 3.3 70B) + Tavily** — real agentic loop that:
+1. Receives your WhatsApp message
+2. LLM decides what to search for and calls the Tavily web search tool
+3. Evaluates results — retries with a refined query if needed
+4. Replies with real, live news articles
 
-## Setup
+## Stack
+- **Groq** — LLaMA 3.3 70B (fast, free)
+- **Tavily** — real-time web search for AI agents
+- **LangChain** — agentic tool-calling loop
+- **FastAPI** — webhook server for Meta WhatsApp API
 
-### 1. Install dependencies
+## Environment Variables (set in HF Spaces Secrets)
 
+| Variable | Description |
+|---|---|
+| `GROQ_API_KEY` | From [console.groq.com](https://console.groq.com) |
+| `TAVILY_API_KEY` | From [app.tavily.com](https://app.tavily.com) |
+| `WHATSAPP_TOKEN` | Meta WhatsApp Cloud API token |
+| `WHATSAPP_PHONE_NUMBER_ID` | From Meta Developer dashboard |
+| `WHATSAPP_VERIFY_TOKEN` | Any string you choose, e.g. `news_agent_verify` |
+
+## Local Development
 ```bash
+# Create virtual environment
+python -m venv newsagent
+newsagent\Scripts\activate      # Windows
+source newsagent/bin/activate   # Mac/Linux
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Get a Gemini API key
+# Copy and fill in your keys
+cp .env.example .env
 
-Free at https://aistudio.google.com/apikey
-
-### 3. Set your API key
-
-```bash
-export GEMINI_API_KEY="your_key_here"
-```
-
-Or add it to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.).
-
-## Usage
-
-### Interactive mode (recommended)
-
-```bash
-python news_agent.py
-```
-
-Type any topic at the `News ›` prompt. Type `help` for examples, `quit` to exit.
-
-### Single-query mode
-
-```bash
+# Run CLI
 python news_agent.py -q "AI news today"
-python news_agent.py -q "cricket scores latest"
-python news_agent.py -q "Tesla news this week"
+
+# Run WhatsApp server locally
+uvicorn app:app --host 0.0.0.0 --port 7860 --reload
 ```
 
-### Raw JSON output (for scripting / piping)
-
-```bash
-python news_agent.py -q "stock market today" --json
-python news_agent.py -q "technology news" --json | jq '.[].headline'
-```
-
-### Pass API key inline
-
-```bash
-python news_agent.py --api-key YOUR_KEY -q "world news today"
-```
-
-## Options
-
-```
-  -q, --query TEXT     Run a single query and exit
-  --json               Print raw JSON instead of formatted output
-  --api-key TEXT       Gemini API key (or set GEMINI_API_KEY env var)
-  -h, --help           Show help
-```
-
-## Example queries
-
-| Query | What it finds |
-|-------|--------------|
-| `AI news today` | Latest AI / ML news |
-| `cricket scores yesterday` | Recent match results |
-| `stock market today` | Finance & markets |
-| `Tesla latest news` | Company-specific news |
-| `technology updates 2026` | General tech news |
-| `global politics today` | World news |
-| `startup funding this week` | VC & startup news |
-| `health science news` | Medical updates |
-
-## Output format
-
-Each article shows:
-- Publisher name + publication date
-- Headline
-- 3–5 sentence factual summary
-- Article URL
-
-## JSON schema (for `--json` mode)
-
-```json
-[
-  {
-    "headline": "Full article headline",
-    "published": "29 June 2026, 14:30 UTC",
-    "source": "Reuters",
-    "summary": "3–5 sentence factual summary.",
-    "url": "https://reuters.com/...",
-    "verified": true,
-    "retries": 0
-  }
-]
-```
-
-## Configuration
-
-Edit the constants at the top of `news_agent.py`:
-
-```python
-GEMINI_MODEL       = "gemini-2.0-flash"   # or "gemini-1.5-pro" for higher quality
-MAX_RETRIES        = 3                     # verification retries
-ARTICLES_PER_QUERY = 5                     # max articles returned
-```
+## Webhook Setup (Meta Developer Console)
+1. Deploy this Space
+2. Go to [developers.facebook.com](https://developers.facebook.com) → your WhatsApp app → Webhooks
+3. Set Callback URL: `https://<your-space-url>/webhook`
+4. Set Verify Token: same value as `WHATSAPP_VERIFY_TOKEN`
+5. Subscribe to the `messages` field
