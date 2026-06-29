@@ -39,20 +39,9 @@ async def health():
     return {"status": "News Agent is running"}
 
 
-@app.get("/debug")
-async def debug(request: Request):
-    """Temporary debug endpoint — shows received params and expected token."""
-    verify_token = os.environ.get("WHATSAPP_VERIFY_TOKEN", "NOT_SET")
-    return {
-        "received_params": dict(request.query_params),
-        "WHATSAPP_VERIFY_TOKEN_set": verify_token != "NOT_SET",
-        "expected_token_preview": verify_token[:6] + "..." if len(verify_token) > 6 else verify_token,
-    }
-
-
-@app.get("/webhook")
+@app.get("/whatsapp")
 async def verify_webhook(request: Request):
-    """Meta webhook verification."""
+    """Meta webhook verification — uses /whatsapp path to avoid HF proxy blocks."""
     verify_token = os.environ.get("WHATSAPP_VERIFY_TOKEN", "news_agent_verify")
     params    = dict(request.query_params)
     mode      = params.get("hub.mode")
@@ -69,7 +58,7 @@ async def verify_webhook(request: Request):
     return Response(status_code=403)
 
 
-@app.post("/webhook")
+@app.post("/whatsapp")
 async def receive_message(request: Request):
     body = await request.json()
     log.info("Webhook POST: %s", json.dumps(body, indent=2))
