@@ -39,9 +39,9 @@ async def health():
     return {"status": "News Agent is running"}
 
 
-@app.get("/whatsapp")
+@app.get("/api/hook")
 async def verify_webhook(request: Request):
-    """Meta webhook verification — uses /whatsapp path to avoid HF proxy blocks."""
+    """Meta webhook verification."""
     verify_token = os.environ.get("WHATSAPP_VERIFY_TOKEN", "news_agent_verify")
     params    = dict(request.query_params)
     mode      = params.get("hub.mode")
@@ -58,7 +58,7 @@ async def verify_webhook(request: Request):
     return Response(status_code=403)
 
 
-@app.post("/whatsapp")
+@app.post("/api/hook")
 async def receive_message(request: Request):
     body = await request.json()
     log.info("Webhook POST: %s", json.dumps(body, indent=2))
