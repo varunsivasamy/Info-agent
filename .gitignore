@@ -1,0 +1,10 @@
+# Environment variables — never commit real keys
+.env
+
+# Virtual environment
+newsagent/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
