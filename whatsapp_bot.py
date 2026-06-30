@@ -39,7 +39,7 @@ async def health():
     return {"status": "News Agent is running"}
 
 
-@app.get("/api/hook")
+@app.get("/webhook")
 async def verify_webhook(request: Request):
     """Meta webhook verification."""
     verify_token = os.environ.get("WHATSAPP_VERIFY_TOKEN", "news_agent_verify")
@@ -58,7 +58,7 @@ async def verify_webhook(request: Request):
     return Response(status_code=403)
 
 
-@app.post("/api/hook")
+@app.post("/webhook")
 async def receive_message(request: Request):
     body = await request.json()
     log.info("Webhook POST: %s", json.dumps(body, indent=2))
