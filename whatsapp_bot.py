@@ -39,6 +39,18 @@ async def health():
     return {"status": "News Agent is running"}
 
 
+@app.get("/config-check")
+async def config_check():
+    """Check if all required env vars are set (values hidden)."""
+    return {
+        "GROQ_API_KEY":             "set" if os.environ.get("GROQ_API_KEY") else "MISSING",
+        "TAVILY_API_KEY":           "set" if os.environ.get("TAVILY_API_KEY") else "MISSING",
+        "WHATSAPP_TOKEN":           "set" if os.environ.get("WHATSAPP_TOKEN") else "MISSING",
+        "WHATSAPP_PHONE_NUMBER_ID": os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "MISSING"),
+        "WHATSAPP_VERIFY_TOKEN":    "set" if os.environ.get("WHATSAPP_VERIFY_TOKEN") else "MISSING",
+    }
+
+
 @app.get("/webhook")
 async def verify_webhook(request: Request):
     """Meta webhook verification."""
